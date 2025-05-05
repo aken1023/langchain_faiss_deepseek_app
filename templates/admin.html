@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>知識庫管理後台</title>
+    <style>
+        /* 響應式基本設置 */
+        * {
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4e937a;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --success-color: #27ae60;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --background-color: #f9f9f9;
+            --card-color: #ffffff;
+            --text-color: #34495e;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color, #f5f5f5);
+            background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+            color: var(--text-color, #34495e);
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-color, #fff);
+            padding: 25px;
+            border-radius: var(--border-radius, 8px);
+            box-shadow: var(--box-shadow, 0 0 10px rgba(0, 0, 0, 0.1));
+            width: 100%;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        /* 響應式媒體查詢 */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            /* 頂部標題和登出按鈕 */
+            .container > div:first-child {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            input[type="password"], input[type="file"] {
+                padding: 6px;
+            }
+        }
+        
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 20px;
+            }
+            
+            .login-form, .admin-panel {
+                padding: 15px;
+            }
+        }
+        h1 {
+            color: var(--dark-color, #333);
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        h1:after {
+            content: '';
+            position: absolute;
+            width: 60%;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary-color, #4a6fa5), var(--accent-color, #4e937a));
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        
+        h2, h3, h4 {
+            color: var(--dark-color, #333);
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        
+        h2:after, h3:after, h4:after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(to right, var(--accent-color, #4e937a), transparent);
+            bottom: -8px;
+            left: 0;
+            border-radius: 2px;
+        }
+        
+        .login-form, .admin-panel {
+            padding: 25px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: var(--border-radius, 8px);
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            animation: slideIn 0.6s ease-in-out;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="password"], input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: var(--success-color, #4CAF50);
+            color: white;
+            padding: 12px 15px;
+            border: none;
+            border-radius: var(--border-radius, 8px);
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.6s;
+        }
+        
+        button:hover:before {
+            left: 100%;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+        }
+        
+        #rebuild-index-btn {
+            background-color: var(--primary-color, #4a6fa5);
+        }
+        
+        #rebuild-index-btn:hover {
+            background-color: var(--secondary-color, #166088);
+        }
+        
+        .delete-file {
+            background-color: var(--danger-color, #e74c3c);
+        }
+        
+        .delete-file:hover {
+            background-color: #c0392b;
+        }
+        .alert {
+            padding: 10px;
+            background-color: #f44336;
+            color: white;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #4CAF50;
+        }
+        .file-list {
+            margin-top: 20px;
+        }
+        .file-list h3 {
+            margin-bottom: 10px;
+        }
+        .file-item {
+            padding: 12px 15px;
+            border: 1px solid rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            border-radius: var(--border-radius, 8px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8f9fa;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .file-item:hover {
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            border-left: 3px solid var(--accent-color, #4e937a);
+        }
+        .loading {
+            text-align: center;
+            display: none;
+        }
+        .loading img {
+            width: 50px;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="margin: 0;">知識庫管理後台</h1>
+            <a href="/logout" style="background-color: #e74c3c; color: white; text-decoration: none; padding: 8px 15px; border-radius: 4px; font-size: 14px;">登出</a>
+        </div>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="/" style="color: #4CAF50; text-decoration: none;">返回首頁</a>
+        </div>
+        
+        <!-- 登錄表單 -->
+        <div id="login-section" class="login-form">
+            <div class="form-group">
+                <label for="password">管理員密碼:</label>
+                <input type="password" id="password" name="password">
+            </div>
+            <div class="alert" id="login-alert">密碼錯誤，請重試！</div>
+            <button id="login-btn">登錄</button>
+        </div>
+        
+        <!-- 管理面板 -->
+        <div id="admin-panel" class="admin-panel" style="display: none;">
+            <h2>文件上傳</h2>
+            <div class="form-group">
+                <label for="file-upload">選擇文件 (支持 .pdf, .txt):</label>
+                <input type="file" id="file-upload" name="file" multiple accept=".pdf,.txt">
+            </div>
+            <div class="alert" id="upload-alert">上傳失敗，請重試！</div>
+            <div class="alert success" id="upload-success">文件上傳成功！</div>
+            <button id="upload-btn">上傳文件</button>
+            
+            <div class="loading" id="loading">
+                <p>處理中，請稍候...</p>
+                <div class="spinner"></div>
+            </div>
+            
+            <div class="file-list">
+                <h3>當前文件列表</h3>
+                <div id="file-list-container">
+                    <!-- 文件列表將在這裡動態加載 -->
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button id="rebuild-index-btn">重建向量索引</button>
+                <div class="alert success" id="rebuild-success">索引重建成功！</div>
+                
+                <div id="indexing-progress" style="margin-top: 15px; display: none;">
+                    <h4>索引進度</h4>
+                    <div class="progress-container" style="border: 1px solid #ddd; border-radius: 4px; padding: 10px; margin-bottom: 10px;">
+                        <p><strong>當前階段:</strong> <span id="current-stage">-</span></p>
+                        <p><strong>文檔數量:</strong> <span id="document-count">-</span></p>
+                        <p><strong>文檔塊數量:</strong> <span id="chunk-count">-</span></p>
+                        <div class="progress-bar-container" style="background-color: #f1f1f1; border-radius: 8px; height: 20px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
+                            <div id="progress-bar" style="background: linear-gradient(90deg, #4CAF50, #4e937a); height: 20px; width: 0%; border-radius: 8px; transition: width 0.5s ease; background-size: 200% 100%; animation: gradientMove 2s linear infinite;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginSection = document.getElementById('login-section');
+            const adminPanel = document.getElementById('admin-panel');
+            const loginBtn = document.getElementById('login-btn');
+            const passwordInput = document.getElementById('password');
+            const loginAlert = document.getElementById('login-alert');
+            const uploadBtn = document.getElementById('upload-btn');
+            const fileUpload = document.getElementById('file-upload');
+            const uploadAlert = document.getElementById('upload-alert');
+            const uploadSuccess = document.getElementById('upload-success');
+            const rebuildBtn = document.getElementById('rebuild-index-btn');
+            const rebuildSuccess = document.getElementById('rebuild-success');
+            const loading = document.getElementById('loading');
+            const fileListContainer = document.getElementById('file-list-container');
+            
+            // 登錄處理
+            loginBtn.addEventListener('click', function() {
+                const password = passwordInput.value;
+                if (password === '1111') { // 硬編碼密碼
+                    loginSection.style.display = 'none';
+                    adminPanel.style.display = 'block';
+                    loadFileList(); // 加載文件列表
+                } else {
+                    loginAlert.style.display = 'block';
+                    setTimeout(() => {
+                        loginAlert.style.display = 'none';
+                    }, 3000);
+                }
+            });
+            
+            // 上傳文件
+            uploadBtn.addEventListener('click', function() {
+                const files = fileUpload.files;
+                if (files.length === 0) {
+                    uploadAlert.textContent = '請選擇至少一個文件';
+                    uploadAlert.style.display = 'block';
+                    setTimeout(() => {
+                        uploadAlert.style.display = 'none';
+                    }, 3000);
+                    return;
+                }
+                
+                const formData = new FormData();
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('files', files[i]);
+                }
+                
+                loading.style.display = 'block';
+                
+                fetch('/api/admin/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    if (data.success) {
+                        uploadSuccess.style.display = 'block';
+                        setTimeout(() => {
+                            uploadSuccess.style.display = 'none';
+                        }, 3000);
+                        fileUpload.value = ''; // 清空文件選擇
+                        loadFileList(); // 重新加載文件列表
+                        
+                        // 提示用戶需要重建索引
+                        const rebuildPrompt = document.createElement('div');
+                        rebuildPrompt.className = 'alert';
+                        rebuildPrompt.style.backgroundColor = '#ff9800';
+                        rebuildPrompt.textContent = '文件已上傳，請點擊「重建向量索引」按鈕更新知識庫';
+                        rebuildPrompt.style.display = 'block';
+                        document.querySelector('.file-list').prepend(rebuildPrompt);
+                        
+                        setTimeout(() => {
+                            rebuildPrompt.style.display = 'none';
+                        }, 10000); // 10秒後隱藏提示
+                    } else {
+                        uploadAlert.textContent = data.error || '上傳失敗，請重試！';
+                        uploadAlert.style.display = 'block';
+                        setTimeout(() => {
+                            uploadAlert.style.display = 'none';
+                        }, 3000);
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    uploadAlert.textContent = '上傳過程中發生錯誤';
+                    uploadAlert.style.display = 'block';
+                    setTimeout(() => {
+                        uploadAlert.style.display = 'none';
+                    }, 3000);
+                    console.error('Error:', error);
+                });
+            });
+            
+            // 獲取索引進度
+            function checkIndexingStatus() {
+                fetch('/api/indexing-status')
+                .then(response => response.json())
+                .then(data => {
+                    const progressSection = document.getElementById('indexing-progress');
+                    const currentStage = document.getElementById('current-stage');
+                    const documentCount = document.getElementById('document-count');
+                    const chunkCount = document.getElementById('chunk-count');
+                    const progressBar = document.getElementById('progress-bar');
+                    
+                    if (data.in_progress) {
+                        progressSection.style.display = 'block';
+                        currentStage.textContent = data.current_stage || '-';
+                        documentCount.textContent = `${data.processed_documents || 0} / ${data.total_documents || 0}`;
+                        chunkCount.textContent = `${data.total_chunks || 0}`;
+                        
+                        // 計算進度百分比
+                        let progress = 0;
+                        if (data.current_stage === '開始加載文檔') {
+                            progress = 10;
+                        } else if (data.current_stage === '文檔分割中') {
+                            progress = 40;
+                        } else if (data.current_stage === '創建向量索引中') {
+                            progress = 70;
+                        } else if (data.current_stage === '保存索引中') {
+                            progress = 90;
+                        }
+                        
+                        progressBar.style.width = `${progress}%`;
+                        
+                        // 繼續檢查進度
+                        setTimeout(checkIndexingStatus, 1000);
+                    } else if (data.current_stage === '完成') {
+                        progressSection.style.display = 'block';
+                        currentStage.textContent = '索引創建完成';
+                        documentCount.textContent = `${data.processed_documents || 0} / ${data.total_documents || 0}`;
+                        chunkCount.textContent = `${data.total_chunks || 0}`;
+                        progressBar.style.width = '100%';
+                        
+                        // 3秒後隱藏進度條
+                        setTimeout(() => {
+                            progressSection.style.display = 'none';
+                        }, 3000);
+                    } else if (data.error) {
+                        progressSection.style.display = 'block';
+                        currentStage.textContent = `錯誤: ${data.error}`;
+                        progressBar.style.width = '0%';
+                        progressBar.style.backgroundColor = '#f44336';
+                    }
+                })
+                .catch(error => {
+                    console.error('獲取索引進度時出錯:', error);
+                });
+            }
+            
+            // 重建索引
+            rebuildBtn.addEventListener('click', function() {
+                loading.style.display = 'block';
+                
+                fetch('/api/reload', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    if (data.message) {
+                        rebuildSuccess.style.display = 'block';
+                        setTimeout(() => {
+                            rebuildSuccess.style.display = 'none';
+                        }, 3000);
+                        
+                        // 開始檢查索引進度
+                        checkIndexingStatus();
+                    } else {
+                        uploadAlert.textContent = data.error || '重建索引失敗，請重試！';
+                        uploadAlert.style.display = 'block';
+                        setTimeout(() => {
+                            uploadAlert.style.display = 'none';
+                        }, 3000);
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    uploadAlert.textContent = '重建索引過程中發生錯誤';
+                    uploadAlert.style.display = 'block';
+                    setTimeout(() => {
+                        uploadAlert.style.display = 'none';
+                    }, 3000);
+                    console.error('Error:', error);
+                });
+            });
+            
+            // 加載文件列表
+            function loadFileList() {
+                fetch('/api/admin/files')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.files && data.files.length > 0) {
+                        let html = '';
+                        data.files.forEach(file => {
+                            html += `
+                                <div class="file-item">
+                                    <span>${file.name}</span>
+                                    <button class="delete-file" data-file="${file.name}">刪除</button>
+                                </div>
+                            `;
+                        });
+                        fileListContainer.innerHTML = html;
+                        
+                        // 添加刪除文件的事件監聽器
+                        document.querySelectorAll('.delete-file').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const fileName = this.getAttribute('data-file');
+                                deleteFile(fileName);
+                            });
+                        });
+                    } else {
+                        fileListContainer.innerHTML = '<p>沒有找到文件</p>';
+                    }
+                })
+                .catch(error => {
+                    fileListContainer.innerHTML = '<p>加載文件列表時出錯</p>';
+                    console.error('Error:', error);
+                });
+            }
+            
+            // 刪除文件
+            function deleteFile(fileName) {
+                if (!confirm(`確定要刪除文件 ${fileName} 嗎？`)) {
+                    return;
+                }
+                
+                fetch(`/api/admin/delete/${encodeURIComponent(fileName)}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        loadFileList(); // 重新加載文件列表
+                    } else {
+                        alert(data.error || '刪除文件失敗');
+                    }
+                })
+                .catch(error => {
+                    alert('刪除文件過程中發生錯誤');
+                    console.error('Error:', error);
+                });
+            }
+        });
+    </script>
+    <footer style="text-align: center; margin-top: 30px; font-size: 12px; color: #7f8c8d; position: fixed; bottom: 10px; width: 100%; left: 0;">
+        &copy; 2025 知識庫問答系統 @AKEN
+    </footer>
+</body>
+</html>

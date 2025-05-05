@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>知識庫問答</title>
+    <!-- 添加Showdown.js用於Markdown轉換 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+    <style>
+        /* 響應式基本設置 */
+        * {
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4e937a;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --success-color: #27ae60;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --background-color: #f9f9f9;
+            --card-color: #ffffff;
+            --text-color: #34495e;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4e937a;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --success-color: #27ae60;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --background-color: #f9f9f9;
+            --card-color: #ffffff;
+            --text-color: #34495e;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--background-color);
+            background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+        }
+        .container {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        h1 {
+            color: var(--dark-color);
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        h1:after {
+            content: '';
+            position: absolute;
+            width: 60%;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        .query-form {
+            margin-bottom: 30px;
+            animation: slideIn 0.6s ease-in-out;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+            letter-spacing: 0.5px;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2);
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.6s;
+        }
+        
+        button:hover:before {
+            left: 100%;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+        }
+        
+        .reload-btn {
+            background-color: var(--danger-color);
+            margin-left: 10px;
+        }
+        
+        .reload-btn:hover {
+            background-color: #c0392b;
+        }
+        .result-container {
+            margin-top: 30px;
+            display: none;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        .answer-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary-color);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .answer-box:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        /* Markdown樣式 */
+        .answer-box h1, .answer-box h2, .answer-box h3, .answer-box h4, .answer-box h5, .answer-box h6 {
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        .answer-box h1 { font-size: 2em; }
+        .answer-box h2 { font-size: 1.5em; }
+        .answer-box h3 { font-size: 1.25em; }
+        .answer-box p { margin-bottom: 16px; }
+        .answer-box ul, .answer-box ol { padding-left: 2em; margin-bottom: 16px; }
+        .answer-box li { margin-bottom: 4px; }
+        .answer-box code {
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: monospace;
+            padding: 0.2em 0.4em;
+        }
+        .answer-box pre {
+            background-color: #f6f8fa;
+            border-radius: 3px;
+            padding: 16px;
+            overflow: auto;
+            font-family: monospace;
+        }
+        .answer-box blockquote {
+            padding: 0 1em;
+            color: #6a737d;
+            border-left: 0.25em solid #dfe2e5;
+            margin: 0 0 16px 0;
+        }
+        .answer-box table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+        .answer-box table th, .answer-box table td {
+            padding: 6px 13px;
+            border: 1px solid #dfe2e5;
+        }
+        .answer-box table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        .sources-container {
+            margin-top: 30px;
+            animation: slideIn 0.7s ease-in-out;
+        }
+        .sources-container h3 {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+        }
+        .sources-container h3:after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(to right, var(--accent-color), transparent);
+            bottom: -8px;
+            left: 0;
+            border-radius: 2px;
+        }
+        .source-item {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            border-left: 3px solid var(--accent-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease-in-out;
+            animation-fill-mode: both;
+        }
+        .source-item:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transform: translateX(3px);
+        }
+        .source-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            display: block;
+            transition: all 0.3s ease;
+            position: relative;
+            padding-left: 5px;
+        }
+        .source-link:hover {
+            color: var(--secondary-color);
+        }
+        .source-link:before {
+            content: '→';
+            position: absolute;
+            left: -15px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .source-link:hover:before {
+            left: -5px;
+            opacity: 1;
+        }
+        .source-path {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .token-info-container {
+            margin-top: 30px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            padding-top: 20px;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        .token-info-container h3 {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+        }
+        .token-info-container h3:after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(to right, var(--warning-color), transparent);
+            bottom: -8px;
+            left: 0;
+            border-radius: 2px;
+        }
+        .token-info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--warning-color);
+            padding: 20px;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        .token-info-box:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .token-info-box p {
+            margin: 8px 0;
+        }
+        .token-info-box p strong {
+            color: var(--dark-color);
+        }
+        #gpu-info {
+            color: var(--success-color);
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        .loading {
+            text-align: center;
+            display: none;
+            margin: 30px 0;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0,0,0,0.1);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            margin: 0 auto;
+        }
+        .loading p {
+            margin-top: 15px;
+            color: var(--primary-color);
+            font-weight: 500;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error-message {
+            color: white;
+            background-color: var(--danger-color);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+            display: none;
+            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        
+        /* 模態對話框樣式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.show {
+            opacity: 1;
+        }
+        /* 響應式媒體查詢 */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .reload-btn {
+                margin-left: 0;
+            }
+            
+            .form-actions {
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .token-info-box {
+                padding: 10px;
+            }
+            
+            .modal-content {
+                width: 90%;
+                margin: 15% auto;
+            }
+            
+            /* 頂部標題和登出按鈕 */
+            .container > div:first-child {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            /* 累計費用區域 */
+            .cumulative-cost-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            #reset-cost-btn {
+                margin-left: 0;
+                margin-top: 10px;
+                width: 100%;
+                background-color: var(--warning-color);
+            }
+            
+            #reset-cost-btn:hover {
+                background-color: #e67e22;
+            }
+        }
+        
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 20px;
+            }
+            
+            .token-info-box {
+                font-size: 12px;
+            }
+        }
+        
+        .modal-content {
+            background-color: var(--card-color);
+            margin: 10% auto;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            width: 70%;
+            max-width: 800px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: translateY(-50px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .modal.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .modal-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .modal-content::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+        .close-modal {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            color: var(--text-color);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .close-modal:hover {
+            color: var(--danger-color);
+            background-color: rgba(231, 76, 60, 0.1);
+            transform: rotate(90deg);
+        }
+        
+        #modal-title {
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .modal-body {
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border-left: 3px solid var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="margin: 0;">知識庫問答</h1>
+            <a href="/logout" style="background-color: #e74c3c; color: white; text-decoration: none; padding: 8px 15px; border-radius: 4px; font-size: 14px;">登出</a>
+        </div>
+        
+        <!-- 來源內容模態對話框 -->
+        <div id="source-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3 id="modal-title">參考來源</h3>
+                <div id="modal-content" class="modal-body"></div>
+            </div>
+        </div>
+        
+        <div class="query-form">
+            <div class="form-group">
+                <label for="query-input">請輸入您的問題：</label>
+                <textarea id="query-input" placeholder="例如：什麼是向量數據庫？"></textarea>
+            </div>
+            <div class="form-actions">
+                <button id="submit-btn" type="button">提交問題</button>
+                <button id="reload-btn" class="reload-btn" type="button">重新加載索引</button>
+            </div>
+        </div>
+        
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <p>正在處理您的問題，請稍候...</p>
+        </div>
+        
+        <div class="error-message" id="error-message"></div>
+        
+        <div class="result-container" id="result-container">
+            <h2>回答：</h2>
+            <div class="answer-box" id="answer-box"></div>
+            
+            <div class="sources-container">
+                <h3>參考來源：</h3>
+                <div id="sources-list"></div>
+            </div>
+            
+            <div class="token-info-container" id="token-info-container" style="display: none;">
+                <h3>Token使用量與費用：</h3>
+                <div class="token-info-box">
+                    <p><strong>模型：</strong> <span id="model-name"></span></p>
+                    <p><strong>輸入Tokens：</strong> <span id="input-tokens"></span></p>
+                    <p><strong>輸出Tokens：</strong> <span id="output-tokens"></span></p>
+                    <p><strong>總計Tokens：</strong> <span id="total-tokens"></span></p>
+                    <p><strong>費用(USD)：</strong> $<span id="cost-usd"></span></p>
+                    <p><strong>費用(TWD)：</strong> NT$<span id="cost-twd"></span></p>
+                    <p id="gpu-info-container" style="display: none;"><strong>GPU加速：</strong> <span id="gpu-info"></span></p>
+                    <hr style="border-top: 1px dashed #ccc; margin: 10px 0;">
+                    <div class="cumulative-cost-container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                        <div class="cumulative-info">
+                            <p><strong>累計Tokens：</strong> <span id="cumulative-tokens"></span></p>
+                            <p><strong>累計費用(USD)：</strong> $<span id="cumulative-cost-usd"></span></p>
+                            <p><strong>累計費用(TWD)：</strong> NT$<span id="cumulative-cost-twd"></span></p>
+                        </div>
+                        <button id="reset-cost-btn" type="button" style="background-color: #e67e22; height: 36px; margin-left: 10px;">重置累計</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 20px; text-align: center;">
+            <a href="/admin" style="color: #666; text-decoration: none; font-size: 14px;">管理員入口</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const queryInput = document.getElementById('query-input');
+            const submitBtn = document.getElementById('submit-btn');
+            const reloadBtn = document.getElementById('reload-btn');
+            const resultContainer = document.getElementById('result-container');
+            const answerBox = document.getElementById('answer-box');
+            const sourcesList = document.getElementById('sources-list');
+            const loading = document.querySelector('.loading');
+            const errorMessage = document.getElementById('error-message');
+            
+            // 提交問題
+            submitBtn.addEventListener('click', function() {
+                const query = queryInput.value.trim();
+                if (!query) {
+                    showError('請輸入問題');
+                    return;
+                }
+                
+                // 顯示加載中
+                loading.style.display = 'block';
+                resultContainer.style.display = 'none';
+                errorMessage.style.display = 'none';
+                
+                // 發送API請求
+                fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query: query })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    
+                    if (data.error) {
+                        showError(data.error);
+                        return;
+                    }
+                    
+                    // 顯示回答（支持Markdown格式）
+                    const converter = new showdown.Converter();
+                    answerBox.innerHTML = converter.makeHtml(data.answer || '沒有找到相關回答');
+                    
+                    // 顯示來源文檔（僅顯示鏈接）
+                    sourcesList.innerHTML = '';
+                    if (data.source_documents && data.source_documents.length > 0) {
+                        data.source_documents.forEach((doc, index) => {
+                            const sourceItem = document.createElement('div');
+                            sourceItem.className = 'source-item';
+                            
+                            const link = document.createElement('a');
+                            link.href = '#';
+                            link.textContent = `參考來源 ${index + 1}: ${doc.source}`;
+                            link.className = 'source-link';
+                            link.onclick = function(e) {
+                                e.preventDefault();
+                                showSourceModal(doc.source, doc.content);
+                            };
+                            sourceItem.appendChild(link);
+                            
+                            sourcesList.appendChild(sourceItem);
+                        });
+                    } else {
+                        sourcesList.innerHTML = '<p>沒有相關來源文檔</p>';
+                    }
+                    
+                    // 顯示Token使用量和費用信息
+                    const tokenInfoContainer = document.getElementById('token-info-container');
+                    if (data.token_info) {
+                        document.getElementById('model-name').textContent = data.token_info.model || 'Unknown';
+                        document.getElementById('input-tokens').textContent = data.token_info.input_tokens || 0;
+                        document.getElementById('output-tokens').textContent = data.token_info.output_tokens || 0;
+                        document.getElementById('total-tokens').textContent = data.token_info.total_tokens || 0;
+                        document.getElementById('cost-usd').textContent = data.token_info.cost_usd || 0;
+                        document.getElementById('cost-twd').textContent = data.token_info.cost_twd || 0;
+                        
+                        // 顯示GPU信息
+                        const gpuInfoContainer = document.getElementById('gpu-info-container');
+                        const gpuInfo = document.getElementById('gpu-info');
+                        if (data.token_info.gpu_info) {
+                            gpuInfo.textContent = `${data.token_info.gpu_info.name} (${data.token_info.gpu_info.count} 個設備)`;
+                            gpuInfoContainer.style.display = 'block';
+                        } else {
+                            gpuInfoContainer.style.display = 'none';
+                        }
+                        
+                        // 顯示累計費用信息
+                        document.getElementById('cumulative-tokens').textContent = data.token_info.cumulative_tokens || 0;
+                        document.getElementById('cumulative-cost-usd').textContent = data.token_info.cumulative_cost_usd || 0;
+                        document.getElementById('cumulative-cost-twd').textContent = data.token_info.cumulative_cost_twd || 0;
+                        
+                        tokenInfoContainer.style.display = 'block';
+                    } else {
+                        tokenInfoContainer.style.display = 'none';
+                    }
+                    
+                    resultContainer.style.display = 'block';
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    showError('請求出錯: ' + error.message);
+                });
+            });
+            
+            // 重新加載索引
+            reloadBtn.addEventListener('click', function() {
+                if (!confirm('確定要重新加載索引嗎？這可能需要一些時間。')) {
+                    return;
+                }
+                
+                loading.style.display = 'block';
+                resultContainer.style.display = 'none';
+                errorMessage.style.display = 'none';
+                
+                fetch('/api/reload', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    
+                    if (data.error) {
+                        showError(data.error);
+                    } else {
+                        alert(data.message || '索引已成功重新加載');
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    showError('重新加載索引出錯: ' + error.message);
+                });
+            });
+            
+            // 顯示錯誤信息
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+            
+            // 顯示來源內容模態對話框
+            function showSourceModal(title, content) {
+                const modal = document.getElementById('source-modal');
+                const modalTitle = document.getElementById('modal-title');
+                const modalContent = document.getElementById('modal-content');
+                
+                modalTitle.textContent = `參考來源: ${title}`;
+                modalContent.textContent = content;
+                modal.style.display = 'block';
+                
+                // 添加動畫效果
+                setTimeout(() => {
+                    modal.classList.add('show');
+                }, 10);
+                
+                // 點擊關閉按鈕關閉模態對話框
+                document.querySelector('.close-modal').onclick = function() {
+                    closeModal(modal);
+                }
+                
+                // 點擊模態對話框外部關閉
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        closeModal(modal);
+                    }
+                }
+            }
+            
+            // 關閉模態對話框
+            function closeModal(modal) {
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300); // 等待過渡效果完成
+            }
+            
+            // 重置累計費用
+            document.getElementById('reset-cost-btn').addEventListener('click', function() {
+                if (!confirm('確定要重置累計費用統計嗎？')) {
+                    return;
+                }
+                
+                // 要求輸入密碼
+                const password = prompt('請輸入重置密碼:');
+                if (!password) {
+                    return; // 用戶取消輸入
+                }
+                
+                if (password !== '1111') {
+                    showError('密碼錯誤，無法重置累計費用');
+                    return;
+                }
+                
+                fetch('/api/reset-cost', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('cumulative-tokens').textContent = '0';
+                        document.getElementById('cumulative-cost-usd').textContent = '0';
+                        document.getElementById('cumulative-cost-twd').textContent = '0';
+                        alert(data.message || '累計費用已重置');
+                    } else {
+                        showError(data.error || '重置累計費用失敗');
+                    }
+                })
+                .catch(error => {
+                    showError('重置累計費用出錯: ' + error.message);
+                });
+            });
+            
+            // 按Enter鍵提交
+            queryInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    submitBtn.click();
+                }
+            });
+        });
+    </script>
+    <footer style="text-align: center; margin-top: 30px; font-size: 12px; color: #7f8c8d; position: fixed; bottom: 10px; width: 100%; left: 0;">
+        &copy; 2025 知識庫問答系統 @AKEN
+    </footer>
+</body>
+</html>

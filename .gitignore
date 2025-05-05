@@ -1,0 +1,5 @@
+# 敏感文件
+.env
+__pycache__/
+*.pyc
+.DS_Store
