@@ -1,0 +1,1 @@
+web: python langchain_faiss_deepseek_app.py

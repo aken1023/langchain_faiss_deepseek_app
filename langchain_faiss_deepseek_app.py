@@ -3,7 +3,7 @@ import sys
 from typing import List, Dict, Any
 import dotenv
 import torch
-
+#1234
 # 加載.env文件
 dotenv.load_dotenv()
 
@@ -55,7 +55,7 @@ if not os.environ.get("OPENAI_API_KEY"):
 from flask import Flask, request, jsonify, render_template, redirect, url_for, send_from_directory, session
 import werkzeug.utils
 import shutil
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings  # 更新導入路徑以解決棄用警告
 from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import TextLoader, DirectoryLoader
 from langchain.text_splitter import CharacterTextSplitter
@@ -94,7 +94,7 @@ if GPU_INFO["available"]:
         model_name="moka-ai/m3e-base",
         model_kwargs={"device": f"cuda:{GPU_INFO['current_device']}"}
     )
-    print(f"嵌入模型將使用GPU: {GPU_INFO['device_name']}")
+    print(f"嵌入模型將用GPU : {GPU_INFO['device_name']}")
 else:
     # 使用CPU進行嵌入計算
     embeddings = HuggingFaceEmbeddings(model_name="moka-ai/m3e-base")
